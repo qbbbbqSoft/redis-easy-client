@@ -1,9 +1,13 @@
 package top.bbqbb.easy.starter.redis.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import top.bbqbb.easy.starter.redis.model.Res;
 import top.bbqbb.easy.starter.redis.model.ResultVO;
+import top.bbqbb.easy.starter.redis.param.RedisAjaxParam;
 import top.bbqbb.easy.starter.redis.result.RedisTR;
 import top.bbqbb.easy.starter.redis.service.impl.RedisServiceTool;
 
@@ -20,20 +24,27 @@ public class HtmlController {
     @Autowired
     RedisServiceTool tool;
     @RequestMapping("/redis-datas")
-    public List<ResultVO> redisDatas() {
+    public Res redisDatas(@RequestBody RedisAjaxParam param) {
         List<ResultVO> datas = new ArrayList<>();
-        RedisTR<Set<String>> tr = tool.keysListByPattern("*");
+        RedisTR<Set<String>> tr = tool.keysListByPattern(param.getKey());
         ResultVO data;
         Set<String> keys = tr.getR();
-        for (String key: keys) {
-            data = new ResultVO();
+        Integer start = param.getStart();
+        Integer end = param.getEnd();
+        ArrayList<String> keyList = new ArrayList<>(keys);
+        if (keyList.size() < (end - start)) {
+            end = start + keyList.size();
+        }
+        for (int i = start; i < end; i++) {
+            String key = keyList.get(i);
             RedisTR<String> r = tool.get(key);
+            RedisTR<Long> ttlR = tool.ttl(key);
             String res = r.getR();
-            data.setKey(key);
-            data.setRes(res);
+            Long ttl = ttlR.getR();
+            data = new ResultVO(key,res,ttl);
             datas.add(data);
         }
-        return datas;
+        return Res.ok().put("data",datas);
     }
 }
 

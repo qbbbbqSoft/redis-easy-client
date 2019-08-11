@@ -37,7 +37,8 @@ public class RedisServiceTool implements RedisService {
         poolconfig.setMaxIdle(100);//最大闲置个数
         poolconfig.setMinIdle(50);//最小闲置个数
         poolconfig.setMaxTotal(10000);//最大连接数
-        pool = new JedisPool(poolconfig,this.host,this.port,100,"root",15);
+        pool = new JedisPool(poolconfig,this.host,this.port,100,this.password,this.database);
+        pool.getResource();
     }
 
     @Override
@@ -104,9 +105,22 @@ public class RedisServiceTool implements RedisService {
     @Override
     public RedisTR<Set<String>> keysListByPattern(String pattern) {
         Set<String> keys = getJedis().keys(pattern);
+        getJedis().close();
         return new RedisTR<>(pattern,keys);
     }
 
+    @Override
+    public RedisTR<List<String>> getPageList(String pattern) {
+        List<String> keys = getJedis().lrange(pattern, 0L, 10L);
+        return new RedisTR<>(pattern,keys);
+    }
+
+    @Override
+    public RedisTR<Long> ttl(String key) {
+        Long ttl = getJedis().ttl(key);
+        getJedis().close();
+        return new RedisTR<>(key,ttl);
+    }
 
     @Override
     public String toString() {

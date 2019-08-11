@@ -37,4 +37,8 @@ public interface RedisService {
     RedisTR<Boolean> keyExist(String key);
 
     RedisTR<Set<String>> keysListByPattern(String pattern);
+
+    RedisTR<List<String>> getPageList(String pattern);
+
+    RedisTR<Long> ttl(String key);
 }

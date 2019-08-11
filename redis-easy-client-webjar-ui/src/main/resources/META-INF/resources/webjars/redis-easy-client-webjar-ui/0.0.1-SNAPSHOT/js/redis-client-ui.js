@@ -1,23 +1,26 @@
 $(document).ready(function() {
    getDatas = function getDatas() {
        $("#tbody").children().remove();
+       var param = {
+           key: $("#key-input").val(),
+           start: 0,
+           end: 5,
+           timeUnit: "NANOSECONDS"
+       }
         $.ajax({
             url:"/redis-datas",
             async:true,
+            method: 'POST',
+            data: JSON.stringify(param),
+            contentType: 'application/json; charset=utf-8',
             success: function (res) {
                 console.log(res);
-                for (var i = 0; i < res.length; i++) {
+                for (var i = 0; i < res.data.length; i++) {
                     var id = "tr" + i;
                     var html = "<tr class='active' id=" + id +">\n" +
-                        "            <td>" + res[i].key + "</td>\n" +
-                        "            <td><div class='input-group' width='300px;'>\n" +
-                        "                            <input type='text' oldVal=" +res[i].res+ " onblur='onBlur($(this))' readonly class='form-control' value=" +res[i].res+ ">\n" +
-                        "                            <span class='input-group-btn hide'>\n" +
-                        "<button class='btn btn-info' type='button' onclick='save($(this))'>\n" +
-                        "确认\n" +
-                        "</button>\n" +
-                        "</span>\n" +
-                        "                        </div></td>\n" +
+                        "            <td>" + res.data[i].key + "</td>\n" +
+                        "            <td style='max-width:500px;min-width:200px;'>" + res.data[i].res + "</td>\n" +
+                        "            <td style='max-width:500px;min-width:200px;'>" + res.data[i].ttl + "</td>\n" +
                         "            <td><button type='button' class='btn btn-primary' onclick='editByKey(" + '\"' + id + '\"' + ")'>修改</button>" +
                         "             <button type='button' class='btn btn-danger' onclick='deleteByKey(" + '\"' + id + '\"' + ")'>删除</button></td>\n" +
                         "        </tr>";
@@ -34,21 +37,28 @@ $(document).ready(function() {
     };
     editByKey = function editByKey(id) {
         // $("#tr0 > td > input").removeAttr("readonly");
-        var $id = "#" + id + "> td > div > input";
-        var $bid = "#" + id + "> td > div > span";
-        $($id).removeAttr("readonly");
-        $($id).focus();
-        $($bid).removeClass("hide");
+        // var $id = "#" + id + "> td > div > input";
+        // var $bid = "#" + id + "> td > div > span";
+        // $($id).removeAttr("readonly");
+        // $($id).focus();
+        // $($bid).removeClass("hide");
+        var $id = "#" + id;
+        var key = $($id).children()[0].innerHTML;
+        var value = $($id).children()[1].innerHTML;
+        $('#myModalLabel').text('修改');
+        $('#newKeyInput').val(key);
+        $('#newValueInput').val(value);
+        $('#newKeyInput').attr('readonly','readonly');
+        $('#myModal').modal('show');
+
     };
-    save = function save(val) {
-        val.parent().addClass("hide");
-        val.parent().prev().attr("readonly","readonly")
-        // console.log(val.parent());
-    };
-    onBlur = function onBlur(val) {
-        val.attr("readonly","readonly");
-        val.val(val.attr("oldVal"));
-        val.next().addClass("hide");
+    addNew = function addNew() {
+        $('#myModalLabel').text('新增');
+        $('#newKeyInput').removeAttr("readonly");
+        $('#newKeyInput').val('');
+        $('#newValueInput').val('');
+        $('#myModal').modal('show');
     }
+
 
 });

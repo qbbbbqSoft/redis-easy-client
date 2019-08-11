@@ -12,4 +12,14 @@ import lombok.Data;
 public class ResultVO {
     private String key;
     private String res;
+    /**
+     * 过期时间
+     */
+    private Long ttl;
+
+    public ResultVO(String key, String res, Long ttl) {
+        this.key = key;
+        this.res = res;
+        this.ttl = ttl;
+    }
 }
