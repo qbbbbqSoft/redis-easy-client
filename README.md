@@ -11,6 +11,7 @@
             <version>1.0.0-RELEASE</version>
         </dependency>
 2. 配置
+>> 
 ![](https://github.com/qbbbbqSoft/img/raw/master/redis-easy-client配置.png)
 3. 使用默认方法
 >> 
