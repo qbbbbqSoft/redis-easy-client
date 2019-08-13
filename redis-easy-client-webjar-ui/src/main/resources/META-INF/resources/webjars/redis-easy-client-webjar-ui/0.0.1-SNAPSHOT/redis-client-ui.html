@@ -3,6 +3,8 @@
     <meta charset="UTF-8"/>
     <script src="/webjars/jquery/3.1.1/jquery.min.js"></script>
     <script src="/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/jquery.timer-1.2.js"></script>
+    <script type="text/javascript" src="js/bootstrap-treeview.js"></script>
     <title>redis-client-ui</title>
     <link rel="stylesheet" href="/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" />
 </head>
@@ -10,8 +12,13 @@
     .hide{
         display: none;
     }
+   .kxb {
+       margin-bottom: 5px;
+   }
 </style>
 <body>
+<div style="float: right;width: 300px;" id="alertDiv">
+</div>
 <div class="container"><br/>
     <div class="alert alert-success">
         <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
@@ -20,8 +27,8 @@
         <table class="table">
             <div class="container1">
                 <div class="row" >
-                    <div class="col-xs-4 col-sm-4">
-                        <label style="font-size: 24px;">redis缓存内容</label>
+                    <div class="col-xs-4 col-sm-4" id="info">
+
                     </div>
                     <div class="col-xs-4 col-sm-4" style="text-align:center;"></div>
                     <div class="col-xs-4 col-sm-4">
@@ -40,19 +47,46 @@
                     </div>
                 </div>
             </div>
-            <thead>
-            <tr>
-                <th>key</th>
-                <th>value</th>
-                <th>过期时间</th>
-                <th>操作</th>
-            </tr>
-            </thead>
             <tbody id="tbody">
+                <div class="row" style="min-height:450px;max-height: 600px;overflow:hidden;position: inherit;">
+                    <div class="col-sm-4" style="border: 1px solid #C4C4C4;height: 70%;padding-right: 5px;overflow-y: scroll;">
+                        <div id="treeview" class=""></div>
+                    </div>
+                    <div class="col-sm-8" style="border: 1px solid #C4C4C4;height: 70%;overflow-y: scroll;">
+                        <div id="valueContent" hidden>
+                            <span style="width: 100%;height: 10%;margin: 5px 0 5px 0;">
+                                <div class="row">
+                                    <div class="col-sm-12" style="margin: 10px 0 10px 0">
+                                        <label for="key" class="col-xs-1 control-label kxb">key:</label>
+                                        <div class="col-xs-5 kxb">
+                                            <input id="key" type="text" class="form-control" value="*" style="width: 100%;">
+                                        </div>
+                                        <div class="col-xs-6 kxb">
+                                            <button type="button" class="btn btn-success" style="width: 100%;" onclick="reLoad()">重新获取数据</button>
+                                        </div>
+                                        <label for="ttl" class="col-xs-1 control-label kxb">ttl:</label>
+                                        <div class="col-xs-5 kxb">
+                                            <input id="ttl" type="text" class="form-control" value="-1" style="width: 100%;" readonly>
+                                        </div>
+                                        <div class="col-xs-6 kxb">
+                                            <button type="button" class="btn btn-warning" style="width: 100%;" onclick="deleteByKey()">删除</button>
+                                        </div>
+                                    </div>
+                                    <!--<div class="col-sm-2">-->
+                                        <!--<button type="button" class="btn btn-danger" style="width: 100%;">删除</button>-->
+                                    <!--</div>-->
+                                </div>
+                            </span>
+                            <textarea id="value" style="width: 100%;height: 75%;padding-bottom: 5px;"></textarea>
+                            <!--<button type="button" class="btn btn-primary btn-lg btn-block" style="height: 5%;padding-bottom: 5px;">删除</button>-->
+                            <button id="save" type="button" class="btn btn-default btn-sm btn-block" style="height: 5%;margin: 10px 0 10px 0;">保存</button>
+                        </div>
+                    </div>
+                </div>
             </tbody>
         </table>
     </div>
-
+    <span hidden id="nodeInfo"> </span>
     <!-- 模态框（Modal） -->
     <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -71,22 +105,24 @@
                             <input type="text" id="newKeyInput" class="form-control" placeholder="请输入key">
                             <label for="value">value</label>
                             <input type="text" id="newValueInput" class="form-control" placeholder="请输入value">
-                            <label for="time">过期时间</label>
+                            <label for="timeValueInput">过期时间</label>
                             <div class="container1">
                                 <div class="row" >
                                     <!--<div class="col-xs-2 col-sm-2">-->
                                         <!---->
                                     <!--</div>-->
                                     <div class="col-xs-6 col-sm-6">
-                                        <input type="text" id="timeValueInput" class="form-control" placeholder="请输入key">
+                                        <input type="text" id="timeValueInput" class="form-control" placeholder="请输入过期时间">
                                     </div>
                                     <div class="col-xs-6 col-sm-6">
-                                        <select class="form-control">
-                                            <option>1</option>
-                                            <option>2</option>
-                                            <option>3</option>
-                                            <option>4</option>
-                                            <option>5</option>
+                                        <select class="form-control" id="timeUnitSelect">
+                                            <option>NANOSECONDS</option>
+                                            <option>MICROSECONDS</option>
+                                            <option>MILLISECONDS</option>
+                                            <option>SECONDS</option>
+                                            <option>MINUTES</option>
+                                            <option>HOURS</option>
+                                            <option>DAYS</option>
                                         </select>
                                     </div>
                                 </div>
@@ -98,7 +134,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭
                     </button>
-                    <button type="button" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary" onclick="createNewRedisCache()">
                         提交更改
                     </button>
                 </div>

@@ -10,7 +10,7 @@
     </parent>
     <groupId>top.bbqbb</groupId>
     <artifactId>redis-easy-client-autoconfiguration</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-RELEASE</version>
     <name>redis-easy-client-autoconfiguration</name>
     <description>Demo project for Spring Boot</description>
 
@@ -19,10 +19,10 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.springframework.boot</groupId>-->
+            <!--<artifactId>spring-boot-starter</artifactId>-->
+        <!--</dependency>-->
         <!--自动生成配置信息-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -20,5 +20,21 @@ public class RedisProperties {
     private String host = "127.0.0.1";
     private int port = 6379;
     private String password = "";
-    private int database = 1;
+    private int database = 0;
+    /**
+     * 最大连接数
+     */
+    private int maxTotal = 100;
+    /**
+     * 最大闲置个数
+     */
+    private int maxIdle = 10;
+    /**
+     * 最小闲置个数
+     */
+    private int minIdle = 0;
+    /**
+     * 超时时间
+     */
+    private int timeout = 2000;
 }

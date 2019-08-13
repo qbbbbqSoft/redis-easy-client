@@ -5,7 +5,7 @@
     <groupId>top.bbqbb</groupId>
     <artifactId>redis-easy-client-webjar-ui</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-RELEASE</version>
     <name>redis-easy-client-webjar-ui</name>
     <description>Demo project for Spring Boot</description>
 

@@ -10,6 +10,4 @@ public class RedisAjaxParam {
     private String value;
     private long timeout = 0;
     private TimeUnit timeUnit = TimeUnit.DAYS;
-    private Integer start;
-    private Integer end;
 }

@@ -6,18 +6,13 @@
 
     <groupId>top.bbqbb</groupId>
     <artifactId>redis-easy-client-starter</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-RELEASE</version>
 
     <dependencies>
         <dependency>
             <groupId>top.bbqbb</groupId>
             <artifactId>redis-easy-client-autoconfiguration</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>top.bbqbb</groupId>
-            <artifactId>redis-easy-client-webjar-ui</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-RELEASE</version>
         </dependency>
     </dependencies>
 

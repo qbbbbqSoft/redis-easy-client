@@ -2,10 +2,7 @@ $(document).ready(function() {
    getDatas = function getDatas() {
        $("#tbody").children().remove();
        var param = {
-           key: $("#key-input").val(),
-           start: 0,
-           end: 5,
-           timeUnit: "NANOSECONDS"
+           key: $("#key-input").val()
        }
         $.ajax({
             url:"/redis-datas",
@@ -15,25 +12,81 @@ $(document).ready(function() {
             contentType: 'application/json; charset=utf-8',
             success: function (res) {
                 console.log(res);
-                for (var i = 0; i < res.data.length; i++) {
-                    var id = "tr" + i;
-                    var html = "<tr class='active' id=" + id +">\n" +
-                        "            <td>" + res.data[i].key + "</td>\n" +
-                        "            <td style='max-width:500px;min-width:200px;'>" + res.data[i].res + "</td>\n" +
-                        "            <td style='max-width:500px;min-width:200px;'>" + res.data[i].ttl + "</td>\n" +
-                        "            <td><button type='button' class='btn btn-primary' onclick='editByKey(" + '\"' + id + '\"' + ")'>修改</button>" +
-                        "             <button type='button' class='btn btn-danger' onclick='deleteByKey(" + '\"' + id + '\"' + ")'>删除</button></td>\n" +
-                        "        </tr>";
-                    $("#tbody").append(html)
-                }
+                $("#info").html("<label style='font-size: 18px;'>redis缓存内容（" + res.info + ")</label>")
+                var data = res.data;
+                $('#treeview').treeview({
+                    expandIcon: "glyphicon glyphicon-chevron-right",
+                    collapseIcon: "glyphicon glyphicon-chevron-down",
+                    nodeIcon: "glyphicon glyphicon-file",
+                    color: "#000",
+                    backColor: "#fff",
+                    onhoverColor: "#FFA500",
+                    borderColor: "red",
+                    showIcon: false,
+                    showBorder: false,
+                    showTags: true,
+                    highlightSelected: true,
+                    selectedColor: "#FFA500",
+                    selectedBackColor: "#D8EDCF",
+                    data: data,
+                    onNodeSelected: function(event, node) {
+                        console.log(node);
+                        if (node.nodes == null) {
+                            $('#valueContent').removeAttr("hidden");
+                            $('#key').val(node.href);
+                            $('#nodeInfo').val(node);
+                            getData(node.href);
+                        }
+                    }
+                }).treeview('collapseAll');
             }
         })
     };
-    deleteByKey = function deleteByKey(id) {
-        var $id = "#" + id;
-        var key = $($id).children()[0].innerHTML;
-        //TODO ajax 删除
-        $($id).remove();
+    getDatas();
+    deleteByKey = function deleteByKey() {
+        var param = {
+          key: $('#key').val()
+        };
+        $.ajax({
+            url:"/del-data-by-key",
+            async:true,
+            method: 'POST',
+            data: JSON.stringify(param),
+            contentType: 'application/json; charset=utf-8',
+            success: function (res) {
+                var timestamp=new Date().getTime();
+                var alertId = "AL" + timestamp;
+                if (res.code == 0) {
+                    $('#myModal').modal('hide');
+                    var html = "<div class='alert alert-success' id=" + alertId + ">\n" +
+                        "    <a href='#' class='close' data-dismiss='alert'>\n" +
+                        "        &times;\n" +
+                        "    </a>\n" +
+                        "    <strong>提示！</strong>" + res.msg + "\n" +
+                        "</div>\n"
+                    $('#alertDiv').append(html);
+                } else {
+                    $('#myModal').modal('hide');
+                    var html = "<div class='alert alert-danger' id=" + alertId + ">\n" +
+                        "    <a href='#' class='close' data-dismiss='alert'>\n" +
+                        "        &times;\n" +
+                        "    </a>\n" +
+                        "    <strong>提示！</strong>" + res.msg + "\n" +
+                        "</div>\n"
+                    $('#alertDiv').append(html);
+                }
+                $('#alertDiv').oneTime('3s',function () {
+                    $('#' + alertId).remove();
+                })
+            },
+            complete: function(xhr,status) {
+                var findDisabledNodes = function() {
+                    return $('#treeview').treeview('search', [ $('#nodeInfo').val().href, { ignoreCase: false, exactMatch: false } ]);
+                };
+                var disabledNodes = findDisabledNodes();
+                $('#treeview').treeview('disableNode', [ disabledNodes, { silent: $('#valueContent').attr("hidden","hidden") }]);
+            }
+        });
     };
     editByKey = function editByKey(id) {
         // $("#tr0 > td > input").removeAttr("readonly");
@@ -45,9 +98,12 @@ $(document).ready(function() {
         var $id = "#" + id;
         var key = $($id).children()[0].innerHTML;
         var value = $($id).children()[1].innerHTML;
+        var ttl = $($id).children()[2].innerHTML;
         $('#myModalLabel').text('修改');
         $('#newKeyInput').val(key);
         $('#newValueInput').val(value);
+        $('#timeValueInput').val(ttl);
+        $("#timeUnitSelect").val("SECONDS");
         $('#newKeyInput').attr('readonly','readonly');
         $('#myModal').modal('show');
 
@@ -58,7 +114,86 @@ $(document).ready(function() {
         $('#newKeyInput').val('');
         $('#newValueInput').val('');
         $('#myModal').modal('show');
+    };
+    createNewRedisCache = function createNewRedisCache() {
+        var checkText=$("#timeUnitSelect").find("option:selected").text();
+        var param = {
+            key: $("#newKeyInput").val(),
+            value: $("#newValueInput").val(),
+            timeout: $("#timeValueInput").val(),
+            timeUnit: checkText
+        };
+        doAjaxAdd(param)
+
+    };
+
+    doAjaxAdd = function doAjaxAdd(param) {
+        $.ajax({
+            url:"/add-data",
+            async:true,
+            method: 'POST',
+            data: JSON.stringify(param),
+            contentType: 'application/json; charset=utf-8',
+            success: function (res) {
+                var timestamp=new Date().getTime();
+                var alertId = "AL" + timestamp;
+                if (res.code == 0) {
+                    $('#myModal').modal('hide');
+                    var html = "<div class='alert alert-success' id=" + alertId + ">\n" +
+                        "    <a href='#' class='close' data-dismiss='alert'>\n" +
+                        "        &times;\n" +
+                        "    </a>\n" +
+                        "    <strong>提示！</strong>" + res.msg + "\n" +
+                        "</div>\n"
+                    $('#alertDiv').append(html);
+                } else {
+                    $('#myModal').modal('hide');
+                    var html = "<div class='alert alert-danger' id=" + alertId + ">\n" +
+                        "    <a href='#' class='close' data-dismiss='alert'>\n" +
+                        "        &times;\n" +
+                        "    </a>\n" +
+                        "    <strong>提示！</strong>" + res.msg + "\n" +
+                        "</div>\n"
+                    $('#alertDiv').append(html);
+                }
+                $('#alertDiv').oneTime('3s',function () {
+                    $('#' + alertId).remove();
+                })
+            }
+        });
     }
+
+    getData = function getData(key) {
+        var param = {
+            key: key
+        };
+        $.ajax({
+            url:"/get-data-by-key",
+            async:true,
+            method: 'POST',
+            data: JSON.stringify(param),
+            contentType: 'application/json; charset=utf-8',
+            success: function (res) {
+                $('#value').val(res.data.res);
+                $('#ttl').val(res.data.ttl)
+            }
+        })
+    };
+
+    reLoad = function reLoad() {
+        var key = $('#key').val();
+        getData(key);
+    }
+
+    $('#save').click(function () {
+        var param = {
+            key: $('#key').val(),
+            value: $('#value').val(),
+            timeout: $("#ttl").val(),
+            timeUnit: "SECONDS"
+        }
+        doAjaxAdd(param);
+    })
 
 
 });
