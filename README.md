@@ -4,6 +4,7 @@
 
 ## 一、使用封装的方法
 1. maven坐标
+>>
         <dependency>
             <groupId>top.bbqbb</groupId>
             <artifactId>redis-easy-client-starter</artifactId>
@@ -35,6 +36,7 @@
 
 ## 二、封装了Redis缓存web界面
 1. maven坐标
+>>
         <dependency>
             <groupId>top.bbqbb</groupId>
             <artifactId>redis-easy-client-webjar-ui</artifactId>
