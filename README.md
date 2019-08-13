@@ -1,8 +1,8 @@
 # redis-easy-client
 
-##封装Jedis的方法
+## 封装Jedis的方法
 
-##一、使用封装的方法
+## 一、使用封装的方法
 1. maven坐标
         <dependency>
             <groupId>top.bbqbb</groupId>
@@ -33,7 +33,7 @@
     }
 
 
-##二、封装了Redis缓存web界面
+## 二、封装了Redis缓存web界面
 1. maven坐标
         <dependency>
             <groupId>top.bbqbb</groupId>
@@ -53,10 +53,10 @@
 >> * 删除
 >>> ![](https://github.com/qbbbbqSoft/img/raw/master/preview-del.png)
 
-##三、未完待续
+## 三、未完待续
 -- 没有全部实现方法，有时间会继续完成项目
 
-##四、心得
+## 四、心得
 -- 第一次封装，大佬轻喷，定加强学习
 
 
