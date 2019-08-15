@@ -174,7 +174,14 @@ $(document).ready(function() {
             data: JSON.stringify(param),
             contentType: 'application/json; charset=utf-8',
             success: function (res) {
-                $('#value').val(res.data.res);
+                var value = res.data.res;
+                var isjson = isJsonString(value);
+                if (isjson) {
+                    var result = JSON.stringify(JSON.parse(value), null, 2);
+                    $('#value').val(result);
+                } else {
+                    $('#value').val(value);
+                }
                 $('#ttl').val(res.data.ttl)
             }
         })
@@ -195,5 +202,14 @@ $(document).ready(function() {
         doAjaxAdd(param);
     })
 
+    isJsonString = function isJsonString(str) {
+        try {
+            if (typeof JSON.parse(str) == "object") {
+                return true;
+            }
+        } catch(e) {
+        }
+        return false;
+    }
 
 });
